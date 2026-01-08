@@ -152,10 +152,15 @@ func verifyAttestation(att AttestationObject, clientDataHash, keyID []byte) ([]b
 	}
 
 	// Create verification options.
+	// Fix: Add KeyUsages to accept certificates with any ExtKeyUsage
+	// This fixes the "x509: certificate specifies an incompatible key usage" error
+	// that occurs with Apple's new App Attest certificates (since Jan 5, 2026)
+	// which have ExtKeyUsage extensions without ServerAuth.
 	verifyOptions := x509.VerifyOptions{
 		Roots:         roots,
 		Intermediates: intermediates,
 		CurrentTime:   TimeNow(),
+		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
 	}
 
 	// 1. Verify that the x5c array contains the intermediate and leaf certificates for App Attest,
